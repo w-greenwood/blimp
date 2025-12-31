@@ -11,20 +11,22 @@ class Triangle():
 		self.points = points
 
 	def volume(self):
-		a, b, c = self.points
 		# theres a 4th point that is at 0,0 but for some reason we dont actually
 		# need it to do the maths right
 
-		stack = np.dstack([a,b,c])
-		return np.linalg.det(stack) / 6
+		stack = np.dstack(self.points)
+		volume = np.linalg.det(stack) / 6
+
+		return volume[0]
 
 	def area(self):
 		# see https://math.stackexchange.com/a/1951650
 
 		_, b, c = self.points - self.points[0]
-		u = np.cross(b, c) # ortagonal vector
 
+		u = np.cross(b, c) # ortagonal vector
 		area = np.linalg.norm(u) / 2
+
 		return area
 
 	def center(self):

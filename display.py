@@ -23,7 +23,15 @@ class Display():
 
 		fonts = pygame.font.init()
 		default = pygame.font.get_default_font()
+
+		monospaced = None
+		for font in pygame.font.get_fonts():
+			if "mono" in font:
+				monospaced = pygame.font.match_font(font)
+				break
+
 		self.font = pygame.font.Font(default, 8)
+		self.monospaced = pygame.font.Font(monospaced, 10)
 
 		# vectors to move stuff into the middle of its section
 		self.pv = [WIDTH*0.25, HEIGHT*0.25]
@@ -136,6 +144,13 @@ class Display():
 		put_text("y", (255,255,0), [0,1.2,0])
 		put_text("z", (0,255,0), [0,0,1.2])
 
+	def draw_table(self):
+		table = self.env.table()
+		v = [WIDTH//2, HEIGHT//2]
+		self.screen.blit(
+			self.monospaced.render(table, False, (0,0,0)), v
+			)
+
 	def check_keys(self):
 		keys = pygame.key.get_pressed()
 		if keys[pygame.K_MINUS]:
@@ -175,6 +190,7 @@ class Display():
 			self.draw_project_arrow()
 			self.draw_top()
 			self.draw_side()
+			self.draw_table()
 
 			self.draw_widget()
 

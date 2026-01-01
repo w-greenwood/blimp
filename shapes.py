@@ -30,7 +30,7 @@ class Triangle():
 		return area
 
 	def center(self):
-		return np.average(self.points, axis=1)
+		return np.average(self.points, axis=0)
 
 	# work out the incident light on the polygon
 	def light(self):

@@ -11,6 +11,9 @@ WIDGET_SCALE = 30
 
 THICKNESS = 1
 
+MOVE_SPEED = 5
+ZOOM_SPEED = 0.5
+
 class Display():
 	def __init__(self, env):
 		self.env = env
@@ -39,7 +42,7 @@ class Display():
 		self.sv = [WIDTH*0.25, HEIGHT*0.75]
 
 		self.resolution = 20
-		self.scale = 20
+		self.scale = 60
 		self.pitch = 45
 		self.roll = 0
 		self.yaw = 45
@@ -154,28 +157,28 @@ class Display():
 	def check_keys(self):
 		keys = pygame.key.get_pressed()
 		if keys[pygame.K_MINUS]:
-			self.scale -= 0.5
+			self.scale -= ZOOM_SPEED
 		elif keys[pygame.K_EQUALS]:
-			self.scale += 0.5
+			self.scale += ZOOM_SPEED
 
 		elif keys[pygame.K_UP]:
-			self.pitch -= 5
+			self.pitch -= MOVE_SPEED
 		elif keys[pygame.K_DOWN]:
-			self.pitch += 5
+			self.pitch += MOVE_SPEED
 		elif keys[pygame.K_LEFT]:
-			self.yaw -= 5
+			self.yaw -= MOVE_SPEED
 		elif keys[pygame.K_RIGHT]:
-			self.yaw += 5
+			self.yaw += MOVE_SPEED
 
 		elif keys[pygame.K_PAGEUP]:
-			self.roll -= 5
+			self.roll -= MOVE_SPEED
 		elif keys[pygame.K_PAGEDOWN]:
-			self.roll += 5
+			self.roll += MOVE_SPEED
 
 	def run(self):
 		done = False
 		while not done:
-			self.clock.tick(60)
+			self.clock.tick(50)
 
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:

@@ -12,13 +12,13 @@ from config import (
 	)
 
 class Envelope():
-	def __init__(self, seg: int = 10):
+	def __init__(self, seg: int = 6):
 		self.bow = [[3, 0]]
 		self.stern = [[-3, 0]]
 
 		self.seg = seg
 		self.splines = [
-				Spline(self.stern + [[-1, 2],[1, 4]] + self.bow, a)
+				Spline(self.stern + [[-0.83, 0.83], [1.602, 1.408]] + self.bow, a)
 				for a in np.linspace(0, 360, seg, endpoint=False)
 			]
 
@@ -94,4 +94,4 @@ class Envelope():
 			]
 		geometry = tabulate(geometry_data, headers=["", "Envelope", "Segment"])
 		material = tabulate(material_data, headers=["Material", "Density", "Upthrust", "Thickness"])
-		return f"{geometry}\n\n{material}"
+		return f"ETERNAL\n\n{geometry}\n\n{material}"

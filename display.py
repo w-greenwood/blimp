@@ -1,6 +1,7 @@
 from typing import Optional
 import numpy as np
 import pygame
+import time
 
 from utils import rotate
 from envelope import Envelope
@@ -50,6 +51,8 @@ class Display():
 		self.roll = 0
 		self.yaw = 45
 
+		self.transparent = False
+
 	def draw_project(self):
 		rib_points = []
 
@@ -90,21 +93,14 @@ class Display():
 			pygame.draw.polygon(screen, (color,color,color,a), points, width=0)
 
 		front = []
-		back = []
 		for quad in quads:
 			quad.rotated = rotate(quad.points, self.yaw, self.pitch, self.roll)
 			b, c = quad.rotated[1:] - quad.rotated[0]
 			u = np.cross(b, c) # ortagonal vector
 
 			if u[0] >= 0: front.append(quad)
-			else: back.append(quad)
 
 		if a is not None:
-			screen = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
-			for quad in back:
-				draw_quad(screen, quad, a)
-			self.screen.blit(screen, (0,0))
-
 			screen = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
 			for quad in front:
 				draw_quad(screen, quad, a)
@@ -204,6 +200,9 @@ class Display():
 		elif keys[pygame.K_PAGEDOWN]:
 			self.roll += MOVE_SPEED
 
+		elif keys[pygame.K_t]:
+			self.transparent = not self.transparent
+
 	def run(self):
 		done = False
 		while not done:
@@ -217,15 +216,26 @@ class Display():
 
 			self.screen.fill("blue")
 
+			start = round(time.time() * 1000)
+
 			quads = self.env.as_quads()
-			self.draw_project()
-			self.draw_solid(quads, 100)
+
+			if self.transparent:
+				self.draw_project()
+				self.draw_solid(quads, 120)
+			else:
+				self.draw_solid(quads)
+
 			self.draw_project_arrow()
 			self.draw_top()
 			self.draw_side()
 			self.draw_table()
 
 			self.draw_widget()
+
+			total = round(time.time() * 1000 - start)
+
+			self.screen.blit(self.monospaced.render(f"{total} ms / 20 ms (50 Hz)", False, (0,0,0)), [10,HEIGHT//2-10])
 
 			pygame.display.flip()
 

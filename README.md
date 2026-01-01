@@ -8,6 +8,14 @@
 
 Installs all dependancies to a venv and runs the program. Depends on python3.
 
+## Controls
+
+- Arrow keys + PgUp/PgDn to pitch, yaw and roll
+
+- -/+ keys to zoom in and out
+
+- T to toggle transparency
+
 ## Constants
 
 Constants are in `config.py`, currenly the envelope material is Mylar.

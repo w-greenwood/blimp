@@ -25,3 +25,10 @@ Constants are in `config.py`, currenly the envelope material is Mylar.
 - Add the CFD solver (Lattice-Bosman)
 
 - Re-validate the volume calculator, seems weirdly low
+
+- Make the pattern renderer
+
+- Make the packing solver for working out how much material would be needed approx.
+
+
+- Add the GUI elements to ajust the spline in real-time

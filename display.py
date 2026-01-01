@@ -89,6 +89,7 @@ class Display():
 			pygame.draw.polygon(self.screen, (color,color,color), points, width=0)
 
 	def draw_top(self):
+		self.screen.blit(self.monospaced.render("TOP VIEW", False, (0,0,0)), [WIDTH//2+10,10])
 		for s in self.env.splines:
 			points = s.top()
 			points *= self.scale
@@ -97,6 +98,7 @@ class Display():
 			pygame.draw.lines(self.screen, "black", False, points, THICKNESS)
 
 	def draw_side(self):
+		self.screen.blit(self.monospaced.render("SIDE VIEW", False, (0,0,0)), [10,HEIGHT//2+10])
 		for s in self.env.splines:
 			points = s.side()
 			points *= self.scale
@@ -149,7 +151,7 @@ class Display():
 
 	def draw_table(self):
 		table = self.env.table()
-		v = [WIDTH//2, HEIGHT//2]
+		v = [WIDTH//2+10, HEIGHT//2+10]
 		self.screen.blit(
 			self.monospaced.render(table, False, (0,0,0)), v
 			)

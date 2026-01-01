@@ -1,8 +1,9 @@
-import pygame
+from typing import Optional
 import numpy as np
+import pygame
 
-from envelope import Envelope
 from utils import rotate
+from envelope import Envelope
 
 WIDTH = 800
 HEIGHT = 600
@@ -13,6 +14,8 @@ THICKNESS = 1
 
 MOVE_SPEED = 5
 ZOOM_SPEED = 0.5
+
+RIB_GAP = 4 # should be divisible by RES
 
 class Display():
 	def __init__(self, env):
@@ -48,16 +51,22 @@ class Display():
 		self.yaw = 45
 
 	def draw_project(self):
+		rib_points = []
+
 		for s in self.env.splines:
-			points = s.project(
-				self.yaw,
-				self.pitch,
-				self.roll
-				)
+			points = s.project(self.yaw,self.pitch,self.roll)
+			rib_points.append(points[::RIB_GAP])
+
 			points *= self.scale
 			points += self.pv
 
 			pygame.draw.lines(self.screen, "black", False, points, THICKNESS)
+
+		rib_points = np.array(rib_points)
+		rib_points = np.rot90(rib_points, 1, axes=(0,1))
+
+		for rib in rib_points:
+			pygame.draw.lines(self.screen, "black", True, rib, THICKNESS)
 
 	def draw_project_arrow(self):
 		start = np.array(self.env.bow[0] + [0])
@@ -71,22 +80,40 @@ class Display():
 
 		pygame.draw.lines(self.screen, "red", False, points, THICKNESS)
 
-	def draw_solid(self):
-		quads = self.env.as_quads()
+	def draw_solid(self, quads, a: Optional[int] = None):
+		def draw_quad(screen, quad, a=255):
+			color = quad.light() * 225
 
-		quads.sort(
-			key=lambda x:
-				rotate(x.center(), self.yaw, self.pitch, self.roll)[0],
-			reverse=True
-			)
-
-		for q in quads:
-			color = q.light() * 225
-
-			points = rotate(q.points, self.yaw, self.pitch, self.roll)[...,1:]
+			points = quad.rotated[...,1:]
 			points *= self.scale
 			points += self.pv
-			pygame.draw.polygon(self.screen, (color,color,color), points, width=0)
+			pygame.draw.polygon(screen, (color,color,color,a), points, width=0)
+
+		front = []
+		back = []
+		for quad in quads:
+			quad.rotated = rotate(quad.points, self.yaw, self.pitch, self.roll)
+			b, c = quad.rotated[1:] - quad.rotated[0]
+			u = np.cross(b, c) # ortagonal vector
+
+			if u[0] >= 0: front.append(quad)
+			else: back.append(quad)
+
+		if a is not None:
+			screen = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+			for quad in back:
+				draw_quad(screen, quad, a)
+			self.screen.blit(screen, (0,0))
+
+			screen = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+			for quad in front:
+				draw_quad(screen, quad, a)
+			self.screen.blit(screen, (0,0))
+
+		else:
+			for quad in front:
+				draw_quad(self.screen, quad)
+
 
 	def draw_top(self):
 		self.screen.blit(self.monospaced.render("TOP VIEW", False, (0,0,0)), [WIDTH//2+10,10])
@@ -190,8 +217,9 @@ class Display():
 
 			self.screen.fill("blue")
 
-			self.draw_solid()
-			# self.draw_project()
+			quads = self.env.as_quads()
+			self.draw_project()
+			self.draw_solid(quads, 100)
 			self.draw_project_arrow()
 			self.draw_top()
 			self.draw_side()

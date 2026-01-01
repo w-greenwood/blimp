@@ -1,14 +1,15 @@
 import numpy as np
 import math
 
-LIGHT = [1, 1, 1] / np.linalg.norm([1, 1, 1])
+LIGHT = [0, 2, 1] / np.linalg.norm([1, 1, 1])
 
 def quad(points):
-	return [Triangle(points[:-1]), Triangle(points[1:])]
+	return [Triangle(points[:-1]), Triangle(points[1:][::-1])]
 
 class Triangle():
 	def __init__(self, points):
 		self.points = points
+		self.rotated = self.points[...,1:]
 
 	def volume(self):
 		# theres a 4th point that is at 0,0 but for some reason we dont actually

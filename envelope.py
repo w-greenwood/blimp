@@ -63,8 +63,8 @@ class Envelope():
 		quads =  self.as_quads()
 
 		# define and calculate all useful data
-		h2_weight = H2_DENSITY - AIR_DENSITY
-		mylar_weight = ENVELOPE_DENSITY - AIR_DENSITY
+		h2_weight = AIR_DENSITY - H2_DENSITY
+		mylar_weight = AIR_DENSITY - ENVELOPE_DENSITY
 
 		area = self.area(quads=quads)
 		volume = self.volume(quads=quads)
@@ -77,8 +77,7 @@ class Envelope():
 		seg_dry_mass = dry_mass / self.seg
 
 		h2_mass = H2_DENSITY * volume
-		air_mass = (volume + skin_volume) * AIR_DENSITY
-		total_lift = (h2_mass + dry_mass) - air_mass
+		total_lift = (h2_weight * volume) + (skin_volume * mylar_weight)
 
 		# generate and return plaintext tables
 		geometry_data = [

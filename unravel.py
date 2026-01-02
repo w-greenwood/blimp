@@ -1,6 +1,71 @@
+from scipy.spatial.transform import Rotation as R
 import numpy as np
 
+def orthagonal(a, b, c):
+	b -= a
+	c -= a
+	return np.cross(b, c) # ortagonal vector
+
+def move_point(a, b, c, d):
+	"""
+		Takes 4 3d vectors
+		  b
+		 /|\
+		a | d
+		 \|/
+		  c
+		Moves d so that the orthagonal vector of abc is the same as that of bcd
+		while maintaining all lengths between points
+	"""
+
+	u = orthagonal(a, b, c)
+
+	print(u)
+
+	pass
+
+def matchup(quad1, quad2):
+	"""
+		quad1 is the quad in the rotated list that is already "straight"
+		quad2 is the quad that we want to align to the other and we know that
+			they share 2 points
+	"""
+	all_points = np.concat((quad1.points, quad2.points), axis=0)
+	print(all_points)
+	unique, index, counts = np.unique(all_points, return_index=True, return_counts=True, axis=0)
+	ad1, b, c, ad2 = unique[np.argsort(counts)]
+
+	if ad1 in quad1.points:
+		a = ad1
+		d = ad2
+	else:
+		d = ad1
+		a = ad2
+
+	d = move_point(a, b, c, d)
+	quad2.points = np.array([b, c, d])
+
 def unravel(quads):
+	quads.sort(key=lambda x: x.center()[0])
+
+
+	rotated = [quads[0]]
+	for quad in quads[1:]:
+		matchup(rotated[-1], quad)
+		rotated.append(quad)
+
+	quit()
+
+
+
+
+
+
+
+
+
+
+def _unravel(quads):
 	edges = []
 	edge_points = []
 	for quad in quads:
@@ -65,6 +130,6 @@ def unravel(quads):
  #
 	# plt.show()
  #
-	# quit()
+	quit()
 
 	return np.array([])

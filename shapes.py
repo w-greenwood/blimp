@@ -40,3 +40,12 @@ class Triangle():
 		p = np.dot(unit, LIGHT)
 		p = np.clip(p, -1.0, 1.0)
 		return np.average(np.arccos(p)) / np.pi
+
+	def as_edges(self):
+		points = np.append(self.points, [self.points[0]], axis=0)
+		return [Edge(points[i:i+2]) for i in range(3)]
+
+class Edge():
+	def __init__(self, points):
+		self.points = points
+		self.external = False

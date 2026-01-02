@@ -14,3 +14,5 @@ ENVELOPE_DENSITY = 1390
 # See: https://laminatedplastics.com/mylar.pdf
 
 ENVELOPE_THICKNESS = 0.001 #m
+
+MATERIAL_WIDTH = 1.5 #m

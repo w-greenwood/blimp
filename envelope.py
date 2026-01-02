@@ -2,6 +2,7 @@ from tabulate import tabulate
 from typing import Optional
 import numpy as np
 
+from packing import pack_length
 from spline import Spline
 from config import (
 		AIR_DENSITY,
@@ -20,10 +21,6 @@ class Envelope():
 				Spline(self.stern + [[-0.83, 0.83], [1.602, 1.408]] + self.bow, a)
 				for a in np.linspace(0, 360, seg, endpoint=False)
 			]
-
-		from unravel import unravel
-
-		unravel(self.splines[0].as_quads(self.splines[1]))
 
 	def as_quads(self):
 		quads = []
@@ -55,6 +52,7 @@ class Envelope():
 
 		area = self.area(quads=quads)
 		volume = self.volume(quads=quads)
+		material_length = pack_length(quads, self.seg)
 
 		length = self.bow[0][0] - self.stern[0][0]
 
@@ -72,7 +70,8 @@ class Envelope():
 				["Area", f"{round(area, 4)} m^2", f"{round(seg_area, 4)} m^2"],
 				["Volume", f"{round(volume, 4)} m^3", "-"],
 				["Upthrust", f"{round(total_lift, 4)} kg", "-"],
-				["Length", f"{round(length, 4)} m", "-"]
+				["Length", f"{round(length, 4)} m", "-"],
+				["Material length", f"{round(material_length, 4)} m", "-"]
 			]
 		material_data = [
 				["Air", f"{AIR_DENSITY} kg/m^3", "-", "-"],

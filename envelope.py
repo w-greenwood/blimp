@@ -2,7 +2,6 @@ from tabulate import tabulate
 from typing import Optional
 import numpy as np
 
-from shapes import quad, Triangle
 from spline import Spline
 from config import (
 		AIR_DENSITY,
@@ -22,28 +21,16 @@ class Envelope():
 				for a in np.linspace(0, 360, seg, endpoint=False)
 			]
 
+		from unravel import unravel
+
+		unravel(self.splines[0].as_quads(self.splines[1]))
+
 	def as_quads(self):
 		quads = []
 
 		pad_splines = self.splines + [self.splines[0]]
-
-		for i in range(len(pad_splines)-1):
-			start = pad_splines[i].vector3d()
-			stop = pad_splines[i+1].vector3d()
-
-			# add the body of the envelope to the quads list
-			for j in range(len(start)-3):
-				# offset by 3 to allow groups of 2 as well as 1 buffer at ends
-				j += 1
-
-				points = np.array([start[j], stop[j], start[j+1], stop[j+1]])
-				quads += quad(points)
-
-			points = np.array([start[0], stop[1], start[1]])
-			quads.append(Triangle(points))
-
-			points = np.array([start[-1], stop[-2], start[-2]])
-			quads.append(Triangle(points))
+		for i in range(self.seg):
+			quads += pad_splines[i].as_quads(pad_splines[i+1])
 
 		return quads
 

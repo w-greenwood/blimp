@@ -1,6 +1,7 @@
 import numpy as np
 import math
 
+from shapes import quad, Triangle
 from utils import rotate
 
 RES = 20
@@ -54,4 +55,28 @@ class Spline():
 		points = rotate(points, yaw, pitch, roll)[...,1:]
 
 		return points
+
+	def as_quads(self, next_spline):
+		quads = []
+
+		# get the 3d point pairs
+		spline_a = self.vector3d()
+		spline_b = next_spline.vector3d()
+
+		pair_splines = np.stack((spline_a, spline_b))
+
+		for i in range(1, RES-2):
+			points = pair_splines[:,i:i+2,:].reshape((4,3), order="C")
+			quads += quad(points)
+
+		# add the Triangles for the front and back
+
+		# THIS BIT ISNT WORKING FOR SOME REASON
+		points = pair_splines[:,0:2,:].reshape((4,3), order="C")[1:4][::-1]
+		quads.insert(0, Triangle(points))
+
+		points = pair_splines[:,-2:,:].reshape((4,3), order="C")[:3]
+		quads.append(Triangle(points))
+
+		return quads
 

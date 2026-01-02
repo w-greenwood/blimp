@@ -200,9 +200,6 @@ class Display():
 		elif keys[pygame.K_PAGEDOWN]:
 			self.roll += MOVE_SPEED
 
-		elif keys[pygame.K_t]:
-			self.transparent = not self.transparent
-
 	def run(self):
 		done = False
 		while not done:
@@ -211,6 +208,11 @@ class Display():
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
 					done = True
+
+				if event.type == pygame.KEYUP:
+					if event.key == pygame.K_t:
+						self.transparent = not self.transparent
+
 
 			self.check_keys()
 

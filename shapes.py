@@ -18,7 +18,7 @@ class Triangle():
 		stack = np.dstack(self.points)
 		volume = np.linalg.det(stack) / 6
 
-		return volume[0]
+		return abs(volume[0])
 
 	def area(self):
 		# see https://math.stackexchange.com/a/1951650

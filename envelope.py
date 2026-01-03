@@ -52,7 +52,8 @@ class Envelope():
 
 		area = self.area(quads=quads)
 		volume = self.volume(quads=quads)
-		material_length = pack_length(quads, self.seg)
+		# material_length = pack_length(quads, self.seg)
+		material_length = 0
 
 		length = self.bow[0][0] - self.stern[0][0]
 

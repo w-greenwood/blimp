@@ -43,6 +43,9 @@ class Envelope():
 
 		return sum(areas)
 
+	def length(self):
+		return self.bow[0][0] - self.stern[0][0]
+
 	def table(self):
 		quads =  self.as_quads()
 
@@ -52,10 +55,8 @@ class Envelope():
 
 		area = self.area(quads=quads)
 		volume = self.volume(quads=quads)
-		# material_length = pack_length(quads, self.seg)
-		material_length = 0
 
-		length = self.bow[0][0] - self.stern[0][0]
+		length = self.length()
 
 		skin_volume = area * ENVELOPE_THICKNESS
 		dry_mass = skin_volume * ENVELOPE_DENSITY
@@ -71,8 +72,7 @@ class Envelope():
 				["Area", f"{round(area, 4)} m^2", f"{round(seg_area, 4)} m^2"],
 				["Volume", f"{round(volume, 4)} m^3", "-"],
 				["Upthrust", f"{round(total_lift, 4)} kg", "-"],
-				["Length", f"{round(length, 4)} m", "-"],
-				["Material length", f"{round(material_length, 4)} m", "-"]
+				["Length", f"{round(length, 4)} m", "-"]
 			]
 		material_data = [
 				["Air", f"{AIR_DENSITY} kg/m^3", "-", "-"],

@@ -1,8 +1,10 @@
 from typing import Optional
 import numpy as np
+import threading
 import pygame
 import time
 
+from pattern import generate_pattern
 from utils import rotate
 from envelope import Envelope
 
@@ -212,6 +214,12 @@ class Display():
 				if event.type == pygame.KEYUP:
 					if event.key == pygame.K_t:
 						self.transparent = not self.transparent
+
+					# generate the pattern
+					# one day this will be a button on the gui???
+					elif event.key == pygame.K_g:
+						thread = threading.Thread(target=generate_pattern, args=(self.env,), daemon=True)
+						thread.start()
 
 
 			self.check_keys()

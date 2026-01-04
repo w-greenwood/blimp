@@ -1,60 +1,158 @@
 from scipy.spatial.transform import Rotation as R
 import numpy as np
 
-def orthagonal(a, b, c):
-	b -= a
-	c -= a
-	return np.cross(b, c) # ortagonal vector
+from shapes import Triangle
 
-def move_point(a, b, c, d):
+import matplotlib.pyplot as plt
+
+def unit(v):
+	v /= np.linalg.norm(v)
+	return v
+
+def orthagonal(points):
+	a, b = points[1:] - points[0]
+	return np.cross(a, b) # ortagonal vector
+
+def angle_between(v1, v2):
+	v1 = unit(v1)
+	v2 = unit(v2)
+
+	angle = np.arccos(np.clip(np.dot(v1, v2), -1.0, 1.0))
+	return angle
+
+def index_of(points, point):
+	# could probably make this more efficient
+	diff = points - point
+	diff = np.abs(diff)
+	diff = np.sum(diff, axis=1)
+	i = np.argmin(diff)
+	return i
+
+def match_rotate(moved, new):
+	u1 = orthagonal(moved.points)
+	u2 = orthagonal(new.points)
+
+	# get the angle between the orthagonals
+	angle = angle_between(u1, u2)
+
+	# get the orthagonal of the othagonals to get the rotation axis
+	points = np.stack(([0,0,0], u2, u1))
+
+	rot = orthagonal(points)
+	rot = unit(rot)
+
+	# apply the rotation vector
+	rot *= angle
+	r = R.from_rotvec(rot)
+
+	rotated = Triangle(r.apply(new.points))
+
+	return rotated
+
+def match_move(origional, moved, new, rotated):
 	"""
-		Takes 4 3d vectors
-		  b
-		 /|\
-		a | d
-		 \|/
-		  c
-		Moves d so that the orthagonal vector of abc is the same as that of bcd
-		while maintaining all lengths between points
+
+	This probably needs a tidy up its a little bit messy!!!
+
 	"""
+	all_points = np.concat((origional.points, new.points), axis=0)
+	unique, counts = np.unique(all_points, return_counts=True, axis=0)
 
-	u = orthagonal(a, b, c)
+	_, _, e1, e2 = np.argsort(counts)
 
-	print(u)
+	e1i_moved = index_of(origional.points, unique[e1])
+	e2i_moved = index_of(origional.points, unique[e2])
+	e1i_rotated = index_of(new.points, unique[e1])
+	e2i_rotated = index_of(new.points, unique[e2])
+	match_e1_moved = np.copy(moved.points[e1i_moved])
+	match_e1_rotated = np.copy(rotated.points[e1i_rotated])
 
-	pass
+	moved.points -= match_e1_moved
+	rotated.points -= match_e1_rotated
 
-def matchup(quad1, quad2):
-	"""
-		quad1 is the quad in the rotated list that is already "straight"
-		quad2 is the quad that we want to align to the other and we know that
-			they share 2 points
-	"""
-	all_points = np.concat((quad1.points, quad2.points), axis=0)
-	print(all_points)
-	unique, index, counts = np.unique(all_points, return_index=True, return_counts=True, axis=0)
-	ad1, b, c, ad2 = unique[np.argsort(counts)]
+	# rotate it around the point we just matched up
 
-	if ad1 in quad1.points:
-		a = ad1
-		d = ad2
-	else:
-		d = ad1
-		a = ad2
+	v1 = rotated.points[e1i_rotated] - rotated.points[e2i_rotated]
+	v2 = moved.points[e1i_moved] - moved.points[e2i_moved]
 
-	d = move_point(a, b, c, d)
-	quad2.points = np.array([b, c, d])
+	angle = angle_between(v1, v2)
+	rot = orthagonal(moved.points)
+	rot = unit(rot)
+	rot *= angle
 
-def unravel(quads):
-	quads.sort(key=lambda x: x.center()[0])
+	r = R.from_rotvec(rot)
 
+	rotated.points = r.apply(rotated.points)
 
+	moved.points += match_e1_moved
+	rotated.points += match_e1_moved
+
+def match_quad(origional, moved, new):
+	rotated = match_rotate(moved, new) # has to return new quad
+	match_move(origional, moved, new, rotated) # opperates in place
+
+	return rotated
+
+def unravel(quads, length):
 	rotated = [quads[0]]
-	for quad in quads[1:]:
-		matchup(rotated[-1], quad)
+	for i in range(1, len(quads)):
+		quad = match_quad(quads[i-1], rotated[-1], quads[i])
 		rotated.append(quad)
 
-	quit()
+	# ==========================================================================
+	if False:
+		fig = plt.figure()
+		ax = fig.add_subplot(projection='3d')
+
+		for quad in quads:
+			_plot_quad(ax, quad, "blue")
+
+		for quad in rotated:
+			_plot_quad(ax, quad, "red")
+
+		plt.show()
+	# ==========================================================================
+
+	# rotate all the points so the othagonals line up with the x axis
+
+	u = orthagonal(rotated[0].points)
+	angle = angle_between(u, np.array([1., 0., 0.]))
+
+	points = np.stack(([0.,0.,0.], u, [1., 0., 0.]))
+	rot = orthagonal(points)
+	rot = unit(rot)
+	rot *= angle
+
+	r = R.from_rotvec(rot)
+
+	all_points = np.concat([quad.points for quad in rotated], axis=0)
+	all_points = np.unique(all_points, axis=0)
+	all_points = r.apply(all_points)[...,1:]
+
+	# rotate all the points so that the length of the segment lines up with y
+
+	length = all_points[-1] - all_points[0]
+	angle = np.arctan2(length[1], length[0])
+
+	sin = np.sin(angle)
+	cos = np.cos(angle)
+
+	x = (all_points[...,0] * cos) + (all_points[...,1] * sin)
+	y = (all_points[...,0] * -sin) + (all_points[...,1] * cos)
+
+	# cetner to start at x=0
+	x -= x.min()
+
+	# sort the points into above/below the line
+	all_points = np.stack((x, y), axis=-1)
+
+	# spin around the points to create a continuous hull
+	# x -= x.max() / 2
+	# angles = np.arctan2(y, x)
+	# i = np.argsort(angles)
+	# all_points = np.stack((x, y), axis=-1)[i]
+
+	return all_points
 
 
 
@@ -65,71 +163,32 @@ def unravel(quads):
 
 
 
-def _unravel(quads):
-	edges = []
-	edge_points = []
-	for quad in quads:
-		quad_edges = quad.as_edges()
-		edges += quad_edges
-		edge_points += [edge.points for edge in quad_edges]
 
-	edge_points = np.array(edge_points)
+# Plotting functions
 
-	"""
-		We need to make sure that there are no missed same edges
+def _plot_quad(ax, quad, color="black"):
+	points = quad.points
+	loop_points = np.concat((points, [points[0]]), axis=0)
 
-		I think this might actually be impossible becuase all the triangles are
-		drawn the same way round. Just incase though ive made sure that cant
-		happen.
+	x = loop_points[...,0]
+	y = loop_points[...,1]
+	z = loop_points[...,2]
 
-		The two points in each of the edges are ordered by their distance from
-		the origin, which is annoying to do but it should be fine for
-		performance since its just number moving around.
+	ax.plot(x, y, z, color=color)
 
-		Check if its actually possible for this to happen IDK
-	"""
-	edge_points_sum = np.sum(edge_points, axis=2)
-	edge_points_sort = np.argsort(edge_points_sum, axis=1).flatten()
+	u = orthagonal(points)
+	center = np.average(points, axis=0)
+	u_points = np.stack((center, center+u))
 
-	offset = np.arange(0, len(edge_points_sort), 2, dtype=np.int64)
-	offset = np.repeat(offset, 2)
+	x = u_points[...,0]
+	y = u_points[...,1]
+	z = u_points[...,2]
 
-	edge_points_sort += offset
+	ax.plot(x, y, z, color="yellow")
 
-	edge_points = edge_points.reshape((-1, 2, 3))
-	edge_points = edge_points.reshape((-1, 3))
-	edge_points = edge_points[edge_points_sort]
-	edge_points = edge_points.reshape((-1, 2, 3))
+def _plot_points(ax, points):
+	x = points[...,0]
+	y = points[...,1]
+	z = points[...,2]
 
-	# End of messing around
-
-	_, index, counts = np.unique(edge_points, return_index=True, return_counts=True, axis=0)
-
-	# This is silly
-	new_edges = []
-	for j in range(len(index)):
-		i = index[j]
-		edge = edges[i]
-		edge.external = counts[j] == 1
-		new_edges.append(edge)
-
-	# import matplotlib.pyplot as plt
- #
-	# fig = plt.figure()
-	# ax = fig.add_subplot(projection='3d')
- #
-	# for edge in new_edges:
-	# 	x = edge.points[...,0]
-	# 	y = edge.points[...,1]
-	# 	z = edge.points[...,2]
- #
-	# 	if not edge.external:
-	# 		ax.plot(x, y, z, color='green')
-	# 	else:
-	# 		ax.plot(x, y, z, color='red')
- #
-	# plt.show()
- #
-	quit()
-
-	return np.array([])
+	ax.scatter(x, y, z, color="yellow")

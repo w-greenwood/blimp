@@ -16,6 +16,8 @@ Installs all dependancies to a venv and runs the program. Depends on python3.
 
 - T to toggle transparency
 
+- G to generate pattern
+
 ## Constants
 
 Constants are in `config.py`, currenly the envelope material is Mylar.

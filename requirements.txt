@@ -1,4 +1,6 @@
+pyexcel_ods3
 tabulate
 pygame
 numpy
 scipy
+tqdm

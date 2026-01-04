@@ -3,8 +3,11 @@ import numpy as np
 from config import MATERIAL_WIDTH
 from unravel import unravel
 
-def pack_length(quads, seg):
-	points = unravel(quads)
+def pack_length(env):
+
+	quads = env.splines[0].as_quads(env.splines[1])
+
+	points = unravel(quads, env.length())
 	angle = pack_angle(points)
 
 	# something to turn the angle into the amount of material used

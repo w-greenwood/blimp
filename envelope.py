@@ -2,13 +2,15 @@ from tabulate import tabulate
 from typing import Optional
 import numpy as np
 
+from pressure import pressure_volume
 from packing import pack_length
 from spline import Spline
 from config import (
 		AIR_DENSITY,
 		H2_DENSITY,
 		ENVELOPE_DENSITY,
-		ENVELOPE_THICKNESS
+		ENVELOPE_THICKNESS,
+		TEST_PRESSURE
 	)
 
 class Envelope():
@@ -31,13 +33,13 @@ class Envelope():
 
 		return quads
 
-	def volume(self, quads: Optional[iter]):
+	def volume(self, quads: Optional[iter] = None):
 		if quads is None: quads = self.as_quads()
 		volumes = [quad.volume() for quad in quads]
 
 		return sum(volumes)
 
-	def area(self, quads: Optional[iter]):
+	def area(self, quads: Optional[iter] = None):
 		if quads is None: quads = self.as_quads()
 		areas = [quad.area() for quad in quads]
 
@@ -55,6 +57,7 @@ class Envelope():
 
 		area = self.area(quads=quads)
 		volume = self.volume(quads=quads)
+		under_pressure = pressure_volume(self, TEST_PRESSURE)
 
 		length = self.length()
 
@@ -71,6 +74,7 @@ class Envelope():
 				["Dry weight", f"{round(dry_mass, 4)} kg", f"{round(seg_dry_mass, 4)} kg"],
 				["Area", f"{round(area, 4)} m^2", f"{round(seg_area, 4)} m^2"],
 				["Volume", f"{round(volume, 4)} m^3", "-"],
+				["Volume (P)", f"{round(under_pressure, 4)} m^3", f"(@ {TEST_PRESSURE} Pa)"],
 				["Upthrust", f"{round(total_lift, 4)} kg", "-"],
 				["Length", f"{round(length, 4)} m", "-"]
 			]

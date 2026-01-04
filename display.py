@@ -5,8 +5,9 @@ import pygame
 import time
 
 from pattern import generate_pattern
-from utils import rotate
+from pressure import graph_pressure
 from envelope import Envelope
+from utils import rotate
 
 WIDTH = 800
 HEIGHT = 600
@@ -25,7 +26,11 @@ class Display():
 		self.env = env
 
 		pygame.init()
+
+		icon = pygame.image.load('example.png')
+
 		pygame.display.set_caption("Bang!")
+		pygame.display.set_icon(icon)
 
 		self.clock = pygame.time.Clock()
 		self.screen = pygame.display.set_mode([WIDTH, HEIGHT])
@@ -220,7 +225,6 @@ class Display():
 					elif event.key == pygame.K_g:
 						thread = threading.Thread(target=generate_pattern, args=(self.env,), daemon=True)
 						thread.start()
-
 
 			self.check_keys()
 

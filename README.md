@@ -14,10 +14,6 @@ Installs all dependancies to a venv and runs the program. Depends on python3.
 
 - -/+ keys to zoom in and out
 
-- T to toggle transparency
-
-- G to generate pattern
-
 ## Constants
 
 Constants are in `config.py`, currenly the envelope material is Mylar.
@@ -32,11 +28,13 @@ Constants are in `config.py`, currenly the envelope material is Mylar.
 
 - Rename the polygon class
 
-- Add the CFD solver (Lattice-Bosman)
+- ~~Add the CFD solver (Lattice-Bosman)~~
+
+- Add the GUI elements / editor
 
 - Re-validate the volume calculator, seems weirdly low
 
-- Make the pattern renderer
+- ~~Make the pattern renderer~~
 
 - Make the packing solver for working out how much material would be needed approx.
 

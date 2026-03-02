@@ -1,5 +1,6 @@
 from typing import Optional
 import numpy as np
+import pygame_gui
 import threading
 import pygame
 import time
@@ -26,6 +27,7 @@ class Display():
 		self.env = env
 
 		pygame.init()
+		self.gui = pygame_gui.UIManager((WIDTH, HEIGHT))
 
 		icon = pygame.image.load('example.png')
 
@@ -230,21 +232,69 @@ class Display():
 	def run(self):
 		done = False
 		while not done:
-			self.clock.tick(50)
+			time_delta = self.clock.tick(50)
+			self.gui.update(time_delta)
+
+			# DO THE GUI
+
+			# trasparency and generate button
+
+			def f_transparent():
+				self.transparent = not self.transparent
+			transparent_button = pygame_gui.elements.ui_button.UIButton(
+				relative_rect=pygame.Rect(((WIDTH//2)-200, (HEIGHT//2)-20), (100, 20)),
+				text="Draw mode",
+				command=f_transparent
+				)
+
+			def f_generate():
+				thread = threading.Thread(target=generate_pattern, args=(self.env,), daemon=True)
+				thread.start()
+			generate_button = pygame_gui.elements.ui_button.UIButton(
+				relative_rect=pygame.Rect(((WIDTH//2)-100, (HEIGHT//2)-20), (100, 20)),
+				text="Generate",
+				command=f_generate
+				)
+
+			# control surface
+
+			spline_picker = pygame_gui.elements.ui_drop_down_menu.UIDropDownMenu(
+				relative_rect=pygame.Rect((WIDTH//2, 0), (WIDTH//4, 20)),
+				options_list=[f"Spline {i}" for i in range(4)],
+				starting_option="Spline 0"
+				)
+			point_picker = pygame_gui.elements.ui_drop_down_menu.UIDropDownMenu(
+				relative_rect=pygame.Rect((WIDTH*0.75, 0), (WIDTH//4, 20)),
+				options_list=[f"Point {i}" for i in range(4)],
+				starting_option="Point 0"
+				)
+
+			point_x = pygame_gui.elements.ui_horizontal_slider.UIHorizontalSlider(
+				relative_rect=pygame.Rect((WIDTH//2, 40), (WIDTH//2, 20)),
+				start_value=0, value_range=range(-3000,3000,1),
+				click_increment=1
+				)
+			label_x = pygame_gui.elements.ui_label.UILabel(
+				relative_rect=pygame.Rect((WIDTH//2, 20), (WIDTH//2, 20)),
+				text=f"x: {point_x.get_current_value()}"
+				)
+			point_y = pygame_gui.elements.ui_horizontal_slider.UIHorizontalSlider(
+				relative_rect=pygame.Rect((WIDTH//2, 80), (WIDTH//2, 20)),
+				start_value=0, value_range=range(-3000,3000,1),
+				click_increment=1
+				)
+			label_y = pygame_gui.elements.ui_label.UILabel(
+				relative_rect=pygame.Rect((WIDTH//2, 60), (WIDTH//2, 20)),
+				text=f"y: {point_y.get_current_value()}"
+				)
+
+			# GUI ENDS
 
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
 					done = True
 
-				if event.type == pygame.KEYUP:
-					if event.key == pygame.K_t:
-						self.transparent = not self.transparent
-
-					# generate the pattern
-					# one day this will be a button on the gui???
-					elif event.key == pygame.K_g:
-						thread = threading.Thread(target=generate_pattern, args=(self.env,), daemon=True)
-						thread.start()
+				self.gui.process_events(event)
 
 			self.check_keys()
 
@@ -261,7 +311,7 @@ class Display():
 				self.draw_solid(quads)
 
 			self.draw_project_arrow()
-			self.draw_top()
+			#self.draw_top()
 			self.draw_side()
 			self.draw_table()
 
@@ -270,6 +320,8 @@ class Display():
 			total = round(time.time() * 1000 - start)
 
 			self.screen.blit(self.monospaced.render(f"{total} ms / 20 ms (50 Hz)", False, (0,0,0)), [10,HEIGHT//2-10])
+
+			self.gui.draw_ui(self.screen)
 
 			pygame.display.flip()
 

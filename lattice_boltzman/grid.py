@@ -169,12 +169,11 @@ class Grid():
 		self.collide()
 
 	def run(self):
-		namedWindow("Airflow visualization", WINDOW_NORMAL)
+		namedWindow("LBM Air-flow visualization", WINDOW_NORMAL)
 
 		while True:
 			self.update()
-			self.update()
-			imshow("Airflow visualization", self.visualization())
+			imshow("LBM Air-flow visualization", self.visualization())
 			waitKey(1)
 
 	def visualization(self):

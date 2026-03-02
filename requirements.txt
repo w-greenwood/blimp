@@ -1,5 +1,7 @@
 opencv-python
 pyexcel_ods3
+matplotlib
+pygame_gui
 tabulate
 shapely
 pygame

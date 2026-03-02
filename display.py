@@ -5,9 +5,9 @@ import pygame
 import time
 
 from pattern import generate_pattern
-from pressure import graph_pressure
 from envelope import Envelope
 from utils import rotate
+from lattice_boltzman.grid import Grid
 
 WIDTH = 800
 HEIGHT = 600
@@ -35,6 +35,13 @@ class Display():
 		self.clock = pygame.time.Clock()
 		self.screen = pygame.display.set_mode([WIDTH, HEIGHT])
 
+		# lattice boltzmann setup
+		self.grid = Grid()
+		self.grid.update_boundary(self.env.cross_section())
+		thread = threading.Thread(target=self.grid.run, daemon=True)
+		thread.start()
+
+		# fonts
 		fonts = pygame.font.init()
 		default = pygame.font.get_default_font()
 
@@ -125,15 +132,24 @@ class Display():
 			points *= self.scale
 			points += self.tv
 
+			pygame.draw.polygon(self.screen, "white", points)
+
+		for s in self.env.splines:
+			points = s.top()
+			points *= self.scale
+			points += self.tv
+
 			pygame.draw.lines(self.screen, "black", False, points, THICKNESS)
 
 	def draw_side(self):
+		# draw on the side view
 		self.screen.blit(self.monospaced.render("SIDE VIEW", False, (0,0,0)), [10,HEIGHT//2+10])
 		for s in self.env.splines:
 			points = s.side()
 			points *= self.scale
 			points += self.sv
 
+			pygame.draw.polygon(self.screen, "white", points)
 			pygame.draw.lines(self.screen, "black", False, points, THICKNESS)
 
 	def draw_widget(self):
@@ -181,10 +197,14 @@ class Display():
 
 	def draw_table(self):
 		table = self.env.table()
-		v = [WIDTH//2+10, HEIGHT//2+10]
-		self.screen.blit(
-			self.monospaced.render(table, False, (0,0,0)), v
-			)
+		x = WIDTH//2+10
+		y = HEIGHT//2+10
+		h = 12 # line height
+
+		for (i, line) in enumerate(table.split("\n")):
+			self.screen.blit(
+				self.monospaced.render(line, False, (0,0,0)), [x, y+(i*h)]
+				)
 
 	def check_keys(self):
 		keys = pygame.key.get_pressed()

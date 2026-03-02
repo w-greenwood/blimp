@@ -1,6 +1,9 @@
 import numpy as np
 import threading
-from .utils import find_hull
+
+from cv2 import namedWindow, imshow, waitKey, WINDOW_NORMAL
+
+from .utils import find_hull, color_map
 
 """
 Helpful article:
@@ -62,8 +65,8 @@ class Grid():
 		Thread safe update boundary condition (external call).
 		Points assumed to be centered around (0,0) but can have arbitrary scale
 		"""
-		with self.lock:
-			self.mask = find_hull(points, WIDTH, HEIGHT)
+		#with self.lock:
+		self.mask = find_hull(points, WIDTH, HEIGHT)
 
 	def stream(self):
 		"""
@@ -161,28 +164,30 @@ class Grid():
 	def update(self):
 		# function to run one itteration of the cycle
 		self.stream()
-		with self.lock: # only bounce uses the boundary condition
-			self.bounce()
+		#with self.lock: # only bounce uses the boundary condition
+		self.bounce()
 		self.collide()
+
+	def run(self):
+		namedWindow("Airflow visualization", WINDOW_NORMAL)
+
+		while True:
+			self.update()
+			self.update()
+			imshow("Airflow visualization", self.visualization())
+			waitKey(1)
 
 	def visualization(self):
 		# get the current visualization of the lattice
+		image = color_map(self.v2)
 
-		image = self.v2 - self.v2.min()
-		image *= 255. / image.max()
-		image = np.clip(image, a_min=0, a_max=255).astype(np.uint8)
+		image[self.overlay()] *= 0
+		image[self.overlay()] += 255
 
-		ret = np.zeros((image.shape[0], image.shape[1], 3), dtype=np.uint8)
-		ret[...,2] = image
-
-		return ret
+		return image
 
 	def overlay(self):
 		return self.mask[1:-1,1:-1]
-
-	def run(self):
-		pass
-
 
 
 
@@ -247,7 +252,6 @@ if __name__ == "__main__":
 		])[::-1]
 
 	envelope = np.concat((top, bottom), axis=0)
-	envelope[...,0] *= -1
 
 	grid.update_boundary(envelope)
 
@@ -266,7 +270,7 @@ if __name__ == "__main__":
 
 	while True:
 		grid.update()
-		masked = np.ma.masked_where(grid.overlay(), grid.visualization())
+		masked = np.ma.masked_where(grid.overlay(), grid.v2)
 		plt.imshow(masked, cmap="turbo")
 		plt.draw()
 		plt.pause(0.0001)

@@ -20,15 +20,15 @@ MYLAR: 1390 (https://laminatedplastics.com/mylar.pdf)
 """
 ENVELOPE_DENSITY = 948 # kg per m^3
 ENVELOPE_THICKNESS = 0.00025 # m (0.25 mm)
-ENVELOPE_ELASTICITY = 35000000 # Pa
+ENVELOPE_ELASTICITY = 35000 # kPa
 """ ^^^
 This is the modulus of elasticity
 
 This is a guess at the moment based on the PVC datasheet above, but it has a
 wide tolerance. I would sugest that this is mesured.
 """
-TEST_PRESSURE = 110000 # Pa
-MAX_PRESSURE = 120000 # Pa
+TEST_PRESSURE = 110 # kPa
+MAX_PRESSURE = 120 # kPa
 # guessed this
 
 # ==============================================================================
@@ -38,3 +38,5 @@ MAX_PRESSURE = 120000 # Pa
 
 SEAM_WIDTH = 0.02 # m (2 cm)
 MATERIAL_WIDTH = 1.5 # m
+
+TANK_SIZE = 7.21

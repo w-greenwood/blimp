@@ -1,5 +1,7 @@
+opencv-python
 pyexcel_ods3
 tabulate
+shapely
 pygame
 numpy
 scipy

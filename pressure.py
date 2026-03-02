@@ -1,5 +1,4 @@
 import matplotlib.pyplot as plt
-import cv2 as cv
 import numpy as np
 
 from config import (
@@ -20,6 +19,8 @@ def pressure_volume(env, pressure):
 	r = r[:-1]
 
 	p_i = pressure - AIR_PRESSURE # internal pressure
+	print(p_i)
+
 	t = ENVELOPE_THICKNESS # thickness
 	E = ENVELOPE_ELASTICITY # Youngs modulus
 
@@ -29,7 +30,11 @@ def pressure_volume(env, pressure):
 	a = l * 2 * r # cross-section of cylinder
 
 	T = a * O_t # tensile force in wall
+
 	e = T / E # strain
+
+	print(T, E)
+	quit()
 
 	c = np.pi * 2 * r # circumferance
 	dc = e / c # change in circumferance at strain

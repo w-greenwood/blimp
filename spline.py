@@ -4,7 +4,7 @@ import math
 from shapes import quad, Triangle
 from utils import rotate
 
-RES = 30
+RES = 20
 
 class Spline():
 	def __init__(self, vertexes, angle):
